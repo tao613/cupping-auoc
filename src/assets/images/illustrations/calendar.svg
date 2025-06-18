@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Calendar Base -->
+  <rect x="40" y="40" width="120" height="140" rx="8" fill="#E0E0E0"/>
+  
+  <!-- Calendar Header -->
+  <rect x="40" y="40" width="120" height="30" rx="8" fill="#BDBDBD"/>
+  
+  <!-- Calendar Grid -->
+  <line x1="40" y1="70" x2="160" y2="70" stroke="#BDBDBD" stroke-width="2"/>
+  <line x1="40" y1="100" x2="160" y2="100" stroke="#BDBDBD" stroke-width="2"/>
+  <line x1="40" y1="130" x2="160" y2="130" stroke="#BDBDBD" stroke-width="2"/>
+  <line x1="40" y1="160" x2="160" y2="160" stroke="#BDBDBD" stroke-width="2"/>
+  
+  <line x1="70" y1="40" x2="70" y2="180" stroke="#BDBDBD" stroke-width="2"/>
+  <line x1="100" y1="40" x2="100" y2="180" stroke="#BDBDBD" stroke-width="2"/>
+  <line x1="130" y1="40" x2="130" y2="180" stroke="#BDBDBD" stroke-width="2"/>
+  
+  <!-- Calendar Rings -->
+  <circle cx="55" cy="85" r="8" fill="#7E57C2" fill-opacity="0.2"/>
+  <circle cx="85" cy="115" r="8" fill="#7E57C2" fill-opacity="0.2"/>
+  <circle cx="115" cy="145" r="8" fill="#7E57C2" fill-opacity="0.2"/>
+  
+  <!-- Calendar Dots -->
+  <circle cx="55" cy="85" r="2" fill="#7E57C2"/>
+  <circle cx="85" cy="115" r="2" fill="#7E57C2"/>
+  <circle cx="115" cy="145" r="2" fill="#7E57C2"/>
+</svg> 
