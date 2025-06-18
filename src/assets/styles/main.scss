@@ -116,6 +116,10 @@
   --transition-short: 0.1s ease-in-out;
   --transition-medium: 0.2s ease-in-out;
   --transition-long: 0.3s ease-in-out;
+  
+  /* Dynamic Viewport Height Variables for Mobile Compatibility */
+  --vh: 1vh; /* Will be updated by JavaScript */
+  --mobile-vh: 100vh; /* Mobile-specific viewport height */
 }
 
 /* Reset */

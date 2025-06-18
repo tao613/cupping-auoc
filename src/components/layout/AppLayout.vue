@@ -41,7 +41,11 @@ onUnmounted(() => {
 .app-layout {
   display: flex;
   height: 100vh;
+  height: calc(var(--vh, 1vh) * 100); /* Use JS-calculated viewport height */
+  height: 100dvh; /* Dynamic viewport height for newer browsers */
   overflow: hidden;
+  /* Mobile viewport optimization */
+  min-height: -webkit-fill-available;
 }
 
 .main-content {
@@ -50,6 +54,11 @@ onUnmounted(() => {
   flex-direction: column;
   margin-left: 280px; /* Default sidebar width */
   transition: margin-left var(--transition-medium);
+  /* Ensure proper height on mobile */
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+  height: 100dvh;
+  min-height: -webkit-fill-available;
 }
 
 /* Desktop collapsed state */
@@ -59,8 +68,19 @@ onUnmounted(() => {
 
 /* Mobile styles */
 @media (max-width: 768px) {
+  .app-layout {
+    /* Mobile-specific height adjustments */
+    height: 100vh;
+    height: calc(var(--mobile-vh, var(--vh, 1vh)) * 1px);
+    height: 100dvh;
+  }
+  
   .main-content {
     margin-left: 0; /* No margin on mobile */
+    /* Mobile viewport height */
+    height: 100vh;
+    height: calc(var(--mobile-vh, var(--vh, 1vh)) * 1px);
+    height: 100dvh;
   }
   
   .app-layout.sidebar-collapsed .main-content {
@@ -77,5 +97,12 @@ main {
   overflow-y: auto;
   padding: var(--spacing-lg);
   background: var(--md-sys-color-background);
+  /* Mobile optimization */
+  -webkit-overflow-scrolling: touch;
+  
+  /* Ensure proper spacing on mobile */
+  @media (max-width: 768px) {
+    padding-bottom: calc(var(--spacing-lg) + env(safe-area-inset-bottom, 0px));
+  }
 }
 </style>

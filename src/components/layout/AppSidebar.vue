@@ -162,7 +162,7 @@
 import { useUiStore } from '@/stores/ui.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { useRouter } from 'vue-router'
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 const uiStore = useUiStore()
 const authStore = useAuthStore()
@@ -170,6 +170,9 @@ const router = useRouter()
 
 // Use the store's mobile state for consistency
 const isMobile = computed(() => uiStore.isMobile)
+
+// Reactive reference for dynamic viewport height
+const dynamicHeight = ref('100vh')
 
 // Get current user data
 const currentUser = computed(() => authStore.currentUser || {
@@ -187,20 +190,83 @@ const userInitials = computed(() => {
   return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase()
 })
 
+// Function to calculate and set dynamic viewport height
+const updateViewportHeight = () => {
+  // Calculate the actual viewport height
+  const vh = window.innerHeight * 0.01
+  document.documentElement.style.setProperty('--vh', `${vh}px`)
+  
+  // Set dynamic height for reactive updates
+  dynamicHeight.value = `${window.innerHeight}px`
+  
+  // For mobile devices, adjust for browser UI
+  if (isMobile.value) {
+    const mobileVh = window.innerHeight
+    document.documentElement.style.setProperty('--mobile-vh', `${mobileVh}px`)
+  }
+}
+
+// Debounced resize handler to improve performance
+let resizeTimeout
+const debouncedResize = () => {
+  clearTimeout(resizeTimeout)
+  resizeTimeout = setTimeout(() => {
+    updateViewportHeight()
+    uiStore.checkMobile()
+  }, 100)
+}
+
 // Handle window resize
 const handleResize = () => {
-  // Force reactivity update
-  uiStore.checkMobile()
+  debouncedResize()
+}
+
+// Handle orientation change (important for mobile)
+const handleOrientationChange = () => {
+  // Small delay to allow browser to finish orientation change
+  setTimeout(() => {
+    updateViewportHeight()
+  }, 300)
 }
 
 onMounted(() => {
-  // Initialize mobile state
+  // Initialize viewport height and mobile state
+  updateViewportHeight()
   uiStore.checkMobile()
+  
+  // Add event listeners
   window.addEventListener('resize', handleResize)
+  window.addEventListener('orientationchange', handleOrientationChange)
+  
+  // Listen for browser UI changes on mobile (iOS Safari specific)
+  if (isMobile.value) {
+    window.addEventListener('scroll', updateViewportHeight, { passive: true })
+    
+    // iOS Safari specific: listen for visual viewport changes
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateViewportHeight)
+    }
+  }
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
+  window.removeEventListener('orientationchange', handleOrientationChange)
+  
+  // Clean up mobile-specific listeners
+  if (isMobile.value) {
+    window.removeEventListener('scroll', updateViewportHeight)
+    
+    // iOS Safari specific: remove visual viewport listener
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', updateViewportHeight)
+    }
+  }
+  
+  // Clean up timeout
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout)
+  }
 })
 
 // Handle collapse toggle with debugging
@@ -249,13 +315,20 @@ const handleLogout = () => {
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 49;
+  /* Use dynamic viewport units for mobile compatibility */
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100); /* Fallback using JS-calculated vh */
+  height: 100dvh; /* Dynamic viewport height - fallback for newer browsers */
 }
 
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
+  /* Use multiple viewport height strategies for maximum compatibility */
   height: 100vh;
+  height: calc(var(--vh, 1vh) * 100); /* Use JS-calculated viewport height */
+  height: 100dvh; /* Dynamic viewport height - adjusts for browser UI */
   width: 280px;
   background: var(--md-sys-color-primary);
   color: white;
@@ -266,6 +339,16 @@ const handleLogout = () => {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  
+  /* iOS Safari specific fixes */
+  -webkit-overflow-scrolling: touch;
+  /* Add padding bottom to ensure content is accessible */
+  padding-bottom: max(env(safe-area-inset-bottom), var(--spacing-lg));
+  /* Ensure content doesn't get cut off by browser UI */
+  min-height: -webkit-fill-available;
+  min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+  min-height: 100dvh;
 }
 
 .sidebar.collapsed {
@@ -277,6 +360,18 @@ const handleLogout = () => {
   .sidebar {
     transform: translateX(-100%);
     width: 280px;
+    /* Mobile-specific height adjustments */
+    height: 100vh;
+    height: calc(var(--mobile-vh, var(--vh, 1vh)) * 1px);
+    height: 100dvh;
+    min-height: -webkit-fill-available;
+    /* Additional padding for iOS Safari bottom bar */
+    padding-bottom: calc(max(env(safe-area-inset-bottom), var(--spacing-lg)) + var(--spacing-md));
+    
+    /* Ensure logout button is always accessible */
+    .logout-section {
+      margin-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--spacing-md));
+    }
   }
   
   .sidebar.mobile-open {
@@ -285,6 +380,14 @@ const handleLogout = () => {
   
   .sidebar.mobile-closed {
     transform: translateX(-100%);
+  }
+  
+  /* Additional mobile optimizations */
+  .sidebar .nav-menu {
+    /* Ensure scrollable area accounts for iOS Safari UI */
+    max-height: calc(100vh - 200px);
+    max-height: calc(var(--mobile-vh, var(--vh, 1vh)) * 1px - 200px);
+    overflow-y: auto;
   }
 }
 
