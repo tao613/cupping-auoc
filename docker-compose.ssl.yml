@@ -1,0 +1,85 @@
+services:
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:15
+    container_name: cupping-auoc-postgres
+    environment:
+      POSTGRES_DB: cupping_auoc
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cupping_auoc"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - cupping-auoc-network
+
+  # 后端API
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.simple
+    container_name: cupping-auoc-backend
+    environment:
+      ENVIRONMENT: development
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: cupping_auoc
+      SECRET_KEY: your-production-secret-key-change-this
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      ALLOWED_ORIGINS: http://localhost:3000,http://247lab.com.cn,https://247lab.com.cn,http://www.247lab.com.cn,https://www.247lab.com.cn
+
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - cupping-auoc-network
+
+  # Certbot for SSL certificates
+  certbot:
+    image: certbot/certbot
+    container_name: cupping-auoc-certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+  # 前端 (Nginx with SSL)
+  frontend:
+    image: nginx:alpine
+    container_name: cupping-auoc-frontend
+    volumes:
+      - ./dist:/usr/share/nginx/html
+      - ./nginx-ssl.conf:/etc/nginx/conf.d/default.conf
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+      - certbot
+    restart: unless-stopped
+    networks:
+      - cupping-auoc-network
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+volumes:
+  postgres_data:
+
+networks:
+  cupping-auoc-network:
+    driver: bridge 
