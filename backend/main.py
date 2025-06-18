@@ -16,11 +16,15 @@ app.add_middleware(
         "http://localhost:5173", 
         "http://localhost:5174",  # Vite可能使用的备用端口
         "http://127.0.0.1:5173",
+<<<<<<< HEAD
         "http://127.0.0.1:5174",
         "http://247lab.com.cn",
         "https://247lab.com.cn",
         "http://www.247lab.com.cn",
         "https://www.247lab.com.cn"
+=======
+        "http://127.0.0.1:5174"
+>>>>>>> main
     ],
     allow_credentials=True,
     allow_methods=["*"],

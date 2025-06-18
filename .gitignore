@@ -1,0 +1,8 @@
+gitignore
+
+.env
+*.log
+__pycache__/
+node_modules/
+docker-compose.override.yml
+db/
