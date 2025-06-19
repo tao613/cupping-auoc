@@ -75,6 +75,18 @@
                   </div>
                 </div>
 
+                <!-- Username -->
+                <div class="form-group">
+                  <label class="form-label">Username (Login Name)</label>
+                  <input
+                    v-model="profileData.username"
+                    type="text"
+                    class="form-input"
+                    placeholder="Enter username for login"
+                  />
+                  <div class="form-hint">This is the name you use to log in to the system</div>
+                </div>
+
                 <!-- Email -->
                 <div class="form-group">
                   <label class="form-label">Email Address</label>
@@ -618,6 +630,12 @@ const getInitials = (name) => {
 .form-textarea {
   resize: vertical;
   min-height: 100px;
+}
+
+.form-hint {
+  font-size: var(--md-sys-typescale-body-small-font-size);
+  color: var(--md-sys-color-on-surface-variant);
+  margin-top: var(--spacing-xs);
 }
 
 .form-actions {
